@@ -2,11 +2,13 @@
   "name": "docu-query",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -17,9 +19,14 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@jest/globals": "^30.5.1",
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "jest": "^30.5.1",
     "tailwindcss": "^4"
+  },
+  "jest": {
+    "transform": {}
   }
 }

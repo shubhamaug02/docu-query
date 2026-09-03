@@ -6,6 +6,17 @@ const nextConfig = {
   // any of these through Turbopack breaks that resolution, so keep them
   // external and let Node require() them straight from node_modules.
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist', '@napi-rs/canvas'],
+
+  // @napi-rs/canvas resolves its actual native .node binary via a dynamic,
+  // platform-computed require() at runtime (picks the right one for
+  // process.platform/arch). Vercel's static file tracer can't follow that, so
+  // without this the binary silently doesn't make it into the deployed
+  // function even though `serverExternalPackages` is set — hence "Cannot find
+  // module '@napi-rs/canvas'" in production despite it working locally.
+  // Vercel's Node.js functions run on glibc/Linux x64, hence -gnu, not -musl.
+  outputFileTracingIncludes: {
+    '/api/extract': ['./node_modules/@napi-rs/canvas-linux-x64-gnu/**'],
+  },
 };
 
 export default nextConfig;

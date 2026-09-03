@@ -8,7 +8,13 @@ Single deployment on Vercel, no CORS to manage. API routes give you a backend wi
 
 ## Why Gemini Flash instead of OpenAI
 
-Free tier, no credit card needed. For a take-home project the cost difference doesn't matter, what matters is not hitting a paywall mid-development. Gemini 1.5 Flash is fast and handles structured JSON output reliably.
+Free tier, no credit card needed. For a take-home project the cost difference doesn't matter, what matters is not hitting a paywall mid-development. Gemini Flash is fast and handles structured JSON output reliably. (Started on 1.5 Flash; Google has since retired that line, so the app now runs on gemini-3.6-flash — see below for how it stays usable when that hits its rate limit.)
+
+## Why fall back to a lighter model on rate limits
+
+Gemini's free tier caps requests per model per day (20/day for gemini-3.6-flash as of writing) — tight enough to hit during normal development, not just heavy real usage. The quota is tracked per model rather than per project or API key, so a second, lighter model has its own untouched quota. When the primary model returns a 429 (quota exhausted), the request automatically retries against gemini-flash-lite-latest instead of failing outright. A 503 (transient overload, not quota) gets a couple of quick backoff retries on the same model first, since that kind of failure can genuinely clear in seconds — retrying a 429 the same way wouldn't, since that quota doesn't reset for hours.
+
+Tradeoff: the fallback model is smaller, so extraction quality on complex or dense documents may be slightly less sharp than the primary model. That's an acceptable cost — a slightly weaker extraction the user can still see and correct beats a hard failure they can't do anything about.
 
 ## Why PDF + CSV only
 
@@ -28,7 +34,7 @@ Gemini infers column names from context, but it can get them wrong or pick awkwa
 
 ## 5MB file limit
 
-Gemini has token limits, so large PDFs would either fail or get silently truncated. I cut text at 8000 characters in the API and capped uploads at 5MB on the frontend. That's a tradeoff I'm documenting rather than hiding.
+Gemini has token limits, so large PDFs would either fail or get silently truncated. I cut text at 50,000 characters in the API (raised from an initial 8,000 once the newer model's much larger context window made that ceiling unnecessarily tight) and capped uploads at 5MB on the frontend. That's a tradeoff I'm documenting rather than hiding.
 
 ## What I cut and why
 

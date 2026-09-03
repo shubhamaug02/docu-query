@@ -14,8 +14,16 @@ const nextConfig = {
   // function even though `serverExternalPackages` is set — hence "Cannot find
   // module '@napi-rs/canvas'" in production despite it working locally.
   // Vercel's Node.js functions run on glibc/Linux x64, hence -gnu, not -musl.
+  // Both are required: the meta-package (@napi-rs/canvas) holds the JS entry
+  // point pdfjs-dist actually calls require() on — that entry point is what
+  // internally does the dynamic platform-specific require() for the binary.
+  // Tracing only the binary (as an earlier version of this fix did) still
+  // leaves require("@napi-rs/canvas") itself unresolvable.
   outputFileTracingIncludes: {
-    '/api/extract': ['./node_modules/@napi-rs/canvas-linux-x64-gnu/**'],
+    '/api/extract': [
+      './node_modules/@napi-rs/canvas/**',
+      './node_modules/@napi-rs/canvas-linux-x64-gnu/**',
+    ],
   },
 };
 

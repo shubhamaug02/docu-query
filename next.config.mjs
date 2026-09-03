@@ -19,10 +19,19 @@ const nextConfig = {
   // internally does the dynamic platform-specific require() for the binary.
   // Tracing only the binary (as an earlier version of this fix did) still
   // leaves require("@napi-rs/canvas") itself unresolvable.
+  //
+  // pdfjs-dist itself also resolves several of its own files dynamically at
+  // runtime, relative to its own location on disk — its worker script
+  // (legacy/build/pdf.worker.mjs, needed for its Node "fake worker" fallback)
+  // being the one that actually bit us, but cmaps/ and standard_fonts/ can be
+  // loaded the same dynamic way depending on a given PDF's fonts. Rather than
+  // keep discovering these one deploy at a time, include the whole package —
+  // ~36MB, comfortably inside Vercel's function size limit.
   outputFileTracingIncludes: {
     '/api/extract': [
       './node_modules/@napi-rs/canvas/**',
       './node_modules/@napi-rs/canvas-linux-x64-gnu/**',
+      './node_modules/pdfjs-dist/**',
     ],
   },
 };
